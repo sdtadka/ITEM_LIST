@@ -3,36 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS उपस्थिति प्रणाली (Advanced Attendance System)</title>
+    <title>Electricals Bill</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* यह स्टाइलिंग सुनिश्चित करती है कि iframe मोबाइल पर पूरी तरह से फिट हो */
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
-        .header-bar {
-            text-align: center; 
-            padding: 15px 10px; 
-            background: #007bff; 
-            color: white; 
-            font-weight: 600;
+        :root { --primary: #166534; --bg: #f0fdf4; --border: #bbf7d0; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg); padding: 10px; margin: 0; color: #0f172a; }
+        
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); }
+
+        /* INPUTS & SEARCH */
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; outline:none; }
+        
+        .search-wrap { position: relative; margin-bottom: 10px; }
+        .search-box { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 4px; font-size: 16px; box-sizing: border-box; outline:none; font-weight: bold; }
+        
+        .results-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: white;
+            border: 1px solid #cbd5e1; max-height: 250px; overflow-y: auto; z-index: 100;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); display: none;
         }
-        #attendance-frame { 
-            width: 100%; 
-            /* 100vh - 50px (हेडर की ऊंचाई) = शेष स्क्रीन की ऊंचाई */
-            height: calc(100vh - 50px); 
-            border: none; 
-            display: block;
+        .result-item { padding: 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; }
+        .result-item:hover { background: #dcfce7; } 
+
+        /* ENTRY PANEL (Tally Strip) */
+        .entry-panel {
+            background: #dcfce7; padding: 10px; border: 1px solid #86efac; display: none; 
+            flex-wrap: wrap; gap: 10px; margin-bottom: 15px; align-items: flex-end;
+        }
+        .form-box { flex: 1; min-width: 80px; }
+        .form-label { font-size: 10px; font-weight: bold; color: #166534; margin-bottom: 2px; display: block; text-transform: uppercase; }
+        .sel-input { width: 100%; padding: 8px; border: 1px solid #166534; border-radius: 0; font-size: 14px; background: white; height: 35px; box-sizing: border-box; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 0 20px; height: 35px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+
+        /* TABLE */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th { background: #166534; color: white; text-align: left; padding: 8px; border: 1px solid #14532d; }
+        td { padding: 8px; border: 1px solid #cbd5e1; vertical-align: middle; }
+        .amount-cell { text-align: right; font-family: monospace; font-size: 14px; }
+
+        /* SIGNATURE & TOTAL SECTION (New) */
+        .bill-footer-section {
+            display: flex; justify-content: space-between; margin-top: 20px; padding-top: 10px; border-top: 2px solid #000;
+        }
+        .footer-left { width: 50%; font-size: 12px; color: #555; }
+        .footer-right { width: 40%; text-align: right; }
+        
+        .grand-total-box { font-size: 18px; font-weight: bold; margin-bottom: 30px; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .auth-sign { font-weight: bold; font-size: 14px; margin-top: 40px; text-transform: uppercase; }
+        .shop-sign-label { font-size: 10px; margin-bottom: 40px; font-style: italic; }
+
+        .btn-print { width: 100%; background: #0f172a; color: white; border: none; padding: 15px; font-size: 18px; border-radius: 4px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+
+        /* PRINT SETTINGS */
+        .bill-header { display: none; }
+        @media print {
+            @page { margin: 5mm; size: A4; }
+            body { background: white; padding: 0; margin: 0; }
+            .container { box-shadow: none; max-width: 100%; width: 100%; padding: 0; margin: 0; border: none; }
+            .no-print { display: none !important; }
+
+            .bill-header {
+                display: block !important; position: relative; text-align: center;
+                border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 5px;
+                padding-left: 80px; padding-right: 80px;
+            }
+            .shop-name { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0; }
+            
+            table { border: 1px solid #000; font-size: 12px; }
+            th { background: #eee !important; color: black; border: 1px solid #000; }
+            td { border: 1px solid #000; padding: 4px; }
+            
+            .bill-footer-section { border-top: 1px solid #000; }
+            .qr-pos { position: absolute; right: 0; bottom: 5px; }
+            .qr-img { width: 60px; height: 60px; }
         }
     </style>
 </head>
 <body>
-    <div class="header-bar">
-        <h3>दैनिक उपस्थिति और लोकेशन ट्रैकर</h3>
+
+<div class="container">
+    <div class="no-print" style="text-align: center; margin-bottom: 15px;">
+        <h2 style="margin:0; color:var(--primary);">ASAF ELECTRONIC & ONLINE CENTRE</h2>
+        <small></small>
     </div>
+
+    <div class="input-group no-print">
+        <input type="text" id="clientName" placeholder="Customer Name">
+        <input type="date" id="billDate">
+    </div>
+
+    <div class="search-wrap no-print">
+        <input type="text" class="search-box" id="searchInput" placeholder="Search Item (e.g. Wire)..." autocomplete="off">
+        <div class="results-dropdown" id="resultsList"></div>
+    </div>
+
+    <div class="entry-panel no-print" id="selectPanel">
+        <div class="form-box" style="flex:1;">
+            <label class="form-label">Brand</label>
+            <select id="selBrand" class="sel-input">
+                <option value="">(Local)</option>
+                <option value="Anchor">Anchor</option>
+                <option value="Havells">Havells</option>
+                <option value="Polycab">Polycab</option>
+                <option value="GreatWhite">GreatWhite</option>
+            </select>
+        </div>
+
+        <div class="form-box" style="flex:2;">
+            <label class="form-label">Item</label>
+            <input type="text" id="selName" readonly class="sel-input" style="background:#eee; font-weight:bold;">
+        </div>
+
+        <div class="form-box" id="sizeBox" style="display:none;">
+            <label class="form-label">Size</label>
+            <select id="selSize" class="sel-input"></select>
+        </div>
+
+        <div class="form-box" style="max-width: 80px;">
+            <label class="form-label">Qty</label>
+            <input type="number" id="selQty" placeholder="0" class="sel-input" style="text-align:center;">
+        </div>
+
+        <div class="form-box" style="max-width: 80px;">
+            <label class="form-label">Unit</label>
+            <select id="selUnit" class="sel-input">
+                <option value="Pc">Pc</option>
+                <option value="Box">Box</option>
+                <option value="Pkt">Pkt</option>
+                <option value="Coil">Coil</option>
+                <option value="Mtr">Mtr</option>
+            </select>
+        </div>
+
+        <div class="form-box" style="max-width: 100px;">
+            <label class="form-label">Rate</label>
+            <input type="number" id="selRate" placeholder="0" class="sel-input" style="text-align:right;">
+        </div>
+
+        <button class="btn-add" onclick="addItem()">Enter ↵</button>
+    </div>
+
+    <div id="printArea">
+        <div class="bill-header">
+            <div class="shop-name">ASAF ELECTRONIC & ONLINE CENTRE</div>
+            <div style="font-size:10px;">📍 Simra Chowk Dumra Road, Sitamarhi | 📞 9939664497</div>
+            <div style="border-top:1px dashed #000; margin-top:5px; padding-top:2px; font-weight:bold;">
+                CLIENT: <span id="pName"></span> | DATE: <span id="pDate"></span>
+            </div>
+            <div class="qr-pos"><img id="qrImage" class="qr-img" src=""></div>
+        </div>
+
+        <table id="mainTable">
+            <thead>
+                <tr>
+                    <th width="5%">S.N</th>
+                    <th width="50%">Item Name</th>
+                    <th width="10%">Qty</th>
+                    <th width="10%">Unit</th>
+                    <th width="10%" style="text-align:right;">Rate</th>
+                    <th width="15%" style="text-align:right;">Amount</th>
+                    <th class="no-print" width="5%"></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="bill-footer-section">
+            <div class="footer-left">
+                <strong>Terms & Conditions:</strong><br>
+                1. Goods once sold will not be taken back.<br>
+                2. Warranty as per company policy only.<br>
+            </div>
+            <div class="footer-right">
+                <div class="grand-total-box">
+                    GRAND TOTAL: <span id="grandTotal">₹0</span>
+                </div>
+                
+                <div class="shop-sign-label">For ASAF ELECTRONIC & ONLINE CENTRE</div>
+                <div class="auth-sign">VASHI AHMAD</div>
+                <div style="font-size:10px;">(Auth. Signatory)</div>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-print no-print" onclick="printBill()">🖨️ PRINT BILL</button>
+</div>
+
+<script>
+    // ================= CONFIG =================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwp3Y9Elpzz7iKx9vHJQP0nRiTYJ1WZ6aUKxTkTd5iy7RYZaMvQDD5Az166q8aDO5RC5g/exec'; 
+    const MAP_LINK = 'https://maps.app.goo.gl/2tZZJpQYSz6UTxc67'; 
+    // ==========================================
+
+    const SMART_SIZES = {
+        wire: ["0.75 sq mm", "1.0 sq mm", "1.5 sq mm", "2.5 sq mm", "4.0 sq mm"],
+        pipe: ["20mm", "25mm", "L-Bend", "Junc. Box"],
+        module: ["1M", "2M", "3M", "4M", "6M", "8M(Sq)", "12M", "18M"],
+        mcb: ["6A", "10A", "16A", "20A", "25A", "32A", "63A"],
+        screw: ["1/2 inch", "3/4 inch", "1 inch", "1.5 inch", "2 inch"]
+    };
+
+    let db = [];
+    document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(MAP_LINK)}`;
+
+    window.onload = () => {
+        document.getElementById('billDate').valueAsDate = new Date();
+        fetch(API_URL).then(r => r.json()).then(d => db = d);
+    };
+
+    const searchInp = document.getElementById('searchInput');
+    const resList = document.getElementById('resultsList');
+    const qtyInp = document.getElementById('selQty');
+    const rateInp = document.getElementById('selRate');
+
+    // SEARCH LOGIC
+    searchInp.addEventListener('input', function() {
+        const val = this.value.toLowerCase();
+        resList.innerHTML = '';
+        if(val.length < 1) { resList.style.display='none'; return; }
+        resList.style.display='block';
+
+        const matches = db.filter(i => i.name.toLowerCase().includes(val));
+        const exact = db.some(i => i.name.toLowerCase() === val);
+
+        matches.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `<b>${item.name}</b>`;
+            div.onclick = () => selectItem(item);
+            resList.appendChild(div);
+        });
+
+        if(!exact && val.trim() !== "") {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.style.background = '#dcfce7';
+            div.innerHTML = `<b style="color:green">➕ Create: "${this.value}"</b>`;
+            div.onclick = () => selectItem({name: this.value, unit: 'Pc'});
+            resList.appendChild(div);
+        }
+    });
+
+    function selectItem(item) {
+        document.getElementById('selectPanel').style.display = 'flex';
+        document.getElementById('selName').value = item.name;
+        
+        // Smart Size Logic
+        const sizeBox = document.getElementById('sizeBox');
+        const sizeSelect = document.getElementById('selSize');
+        sizeSelect.innerHTML = "";
+        const nameLower = item.name.toLowerCase();
+        let cat = null;
+        if(nameLower.includes("wire") || nameLower.includes("cable")) cat = "wire";
+        else if(nameLower.includes("pipe")) cat = "pipe";
+        else if(nameLower.includes("module") || nameLower.includes("plate")) cat = "module";
+        else if(nameLower.includes("mcb")) cat = "mcb";
+        else if(nameLower.includes("screw") || nameLower.includes("zipson")) cat = "screw";
+
+        if(cat) {
+            sizeBox.style.display = "block";
+            SMART_SIZES[cat].forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s; opt.innerText = s;
+                sizeSelect.appendChild(opt);
+            });
+        } else { sizeBox.style.display = "none"; sizeSelect.value = ""; }
+
+        // Unit Logic
+        const uBox = document.getElementById('selUnit');
+        let uFound=false;
+        for(let i=0; i<uBox.options.length; i++) if(uBox.options[i].value===item.unit){uBox.selectedIndex=i;uFound=true;break;}
+        if(!uFound) uBox.value="Pc";
+
+        qtyInp.value = ""; rateInp.value = "";
+        resList.style.display = 'none'; searchInp.value = "";
+        qtyInp.focus();
+    }
+
+    // ENTER KEY NAVIGATION
+    qtyInp.addEventListener("keydown", function(e) { if (e.key === "Enter") rateInp.focus(); });
+    rateInp.addEventListener("keydown", function(e) { if (e.key === "Enter") addItem(); });
+
+    let sr = 1;
+    function addItem() {
+        const name = document.getElementById('selName').value;
+        const brand = document.getElementById('selBrand').value;
+        const size = document.getElementById('selSize').value;
+        const qty = parseFloat(document.getElementById('selQty').value) || 0;
+        const unit = document.getElementById('selUnit').value;
+        const rate = parseFloat(document.getElementById('selRate').value) || 0;
+
+        if(qty === 0) { alert("Qty डालिये!"); qtyInp.focus(); return; }
+
+        let fullname = name;
+        if(brand) fullname = `${brand} ${fullname}`;
+        if(size && document.getElementById('sizeBox').style.display !== 'none') fullname += ` <b>(${size})</b>`;
+
+        const amount = qty * rate; 
+
+        const tbody = document.querySelector('#mainTable tbody');
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${sr++}</td>
+            <td>${fullname}</td>
+            <td style="text-align:center;">${qty}</td>
+            <td>${unit}</td>
+            <td class="amount-cell">${rate > 0 ? '₹'+rate : '-'}</td>
+            <td class="amount-cell amount-val"><b>${amount > 0 ? '₹'+amount : '-'}</b></td>
+            <td class="no-print"><button style="color:red;border:none;background:none;cursor:pointer;" onclick="delRow(this)">×</button></td>
+        `;
+
+        updateTotal();
+        document.getElementById('selectPanel').style.display = 'none';
+        searchInp.focus();
+    }
+
+    function delRow(btn) {
+        btn.closest('tr').remove();
+        updateTotal();
+    }
+
+    function updateTotal() {
+        let sum = 0;
+        document.querySelectorAll('.amount-val').forEach(td => {
+            let txt = td.innerText.replace('₹', '').replace('-', '0');
+            sum += parseFloat(txt) || 0;
+        });
+        document.getElementById('grandTotal').innerText = "₹" + sum.toLocaleString();
+    }
+
+    function printBill() {
+        document.getElementById('pName').innerText = document.getElementById('clientName').value;
+        document.getElementById('pDate').innerText = document.getElementById('billDate').value;
+        window.print();
+    }
     
-    <iframe 
-        id="attendance-frame" 
-        src="https://script.google.com/macros/s/AKfycbxsOk41MTJJFnhG20WfjSLj2sSTK11pWb_thKeZFr87hjRDhIkFKHMm_N9wtn-DT7B9/exec" 
-        title="Project Attendance App">
-    </iframe>
+    document.addEventListener('click', e => {
+        if(!searchInp.contains(e.target) && !resList.contains(e.target)) resList.style.display='none';
+    });
+
+</script>
 
 </body>
 </html>
