@@ -85,7 +85,7 @@
 
 <div class="container">
     <div class="no-print" style="text-align: center; margin-bottom: 15px;">
-        <h2 style="margin:0; color:var(--primary);">ASAF ELECTRONIC & ONLINE CENTRE</h2>
+        <h2 style="margin:0; color:var(--primary);">ASAF PRIDE ELECTRICALS</h2>
         <small></small>
     </div>
 
@@ -104,6 +104,7 @@
             <label class="form-label">Brand</label>
             <select id="selBrand" class="sel-input">
                 <option value="">(Local)</option>
+                <option value="Anchor">Any</option>
                 <option value="Anchor">Anchor</option>
                 <option value="Havells">Havells</option>
                 <option value="Standard">Standard</option>
@@ -149,7 +150,7 @@
 
     <div id="printArea">
         <div class="bill-header">
-            <div class="shop-name">ASAF ELECTRONIC & ONLINE CENTRE</div>
+            <div class="shop-name">ASAF PRIDE ELECTRICALS</div>
             <div style="font-size:10px;">📍 Simra Chowk Dumra Road, Sitamarhi | 📞 9939664497</div>
             <div style="border-top:1px dashed #000; margin-top:5px; padding-top:2px; font-weight:bold;">
                 CLIENT: <span id="pName"></span> | DATE: <span id="pDate"></span>
@@ -183,7 +184,7 @@
                     GRAND TOTAL: <span id="grandTotal">₹0</span>
                 </div>
                 
-                <div class="shop-sign-label">For ASAF ELECTRONIC & ONLINE CENTRE</div>
+                <div class="shop-sign-label">For ASAF PRIDE ELECTRICALS</div>
                 <div class="auth-sign">VASHI AHMAD</div>
                 <div style="font-size:10px;">(Auth. Signatory)</div>
             </div>
@@ -200,11 +201,11 @@
     // ==========================================
 
     const SMART_SIZES = {
-        wire: ["0.50 sq mm", "0.75 sq mm", "1.0 sq mm", "1.5 sq mm", "2.5 sq mm", "4.0 sq mm"],
+        wire: ["0.50 sq mm", "0.75 sq mm", "1.0 sq mm", "1.5 sq mm", "2.5 sq mm", "4.0 sq mm","6 sq mm"],
         pipe: ["19mm", "25mm", "L-Bend", "Junc. Box"],
         module: ["1M", "2M", "3M", "4M", "6M", "8M (H)", "8M(Sq)", "12M", "16M", "18M"],
-        mcb: ["6A", "10A", "16A", "20A", "25A", "32A", "63A"],
-        screw: ["1/2 inch", "3/4 inch", "1 inch", "1.5 inch", "2 inch"]
+        mcb: ["NA","6A", "10A", "16A", "20A", "25A", "32A","40A", "63A"],
+        screw: ["1/2 inch", "3/4 inch", "1 inch", "1.5 inch", "2 inch","3 inch"]
     };
 
     let db = [];
@@ -350,6 +351,3 @@
 
 </body>
 </html>
-
-
-
